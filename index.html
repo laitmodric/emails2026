@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain Filter</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: white;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 30px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    input {
+      flex: 1;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    button {
+      padding: 14px 25px;
+      border: none;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+
+    .filter {
+      padding: 9px 15px;
+      border-radius: 20px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .filter.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+
+    .results {
+      display: grid;
+      gap: 12px;
+    }
+
+    .domain {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .domain-name {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .status {
+      padding: 6px 10px;
+      border-radius: 15px;
+      font-size: 13px;
+    }
+
+    .available {
+      background: #064e3b;
+      color: #6ee7b7;
+    }
+
+    .taken {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .info {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #94a3b8;
+      padding: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Domain Filter</h1>
+    <p class="subtitle">
+      Search and filter your domain list
+    </p>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="search"
+        placeholder="Search domain..."
+        oninput="filterDomains()"
+      >
+
+      <button onclick="filterDomains()">
+        Search
+      </button>
+    </div>
+
+    <div class="filters">
+      <button class="filter active" onclick="setFilter('all', this)">
+        All
+      </button>
+
+      <button class="filter" onclick="setFilter('available', this)">
+        Available
+      </button>
+
+      <button class="filter" onclick="setFilter('taken', this)">
+        Taken
+      </button>
+    </div>
+
+    <div id="results" class="results"></div>
+
+  </div>
+
+
+  <script>
+
+    // Replace these with your own domains
+    const domains = [
+      {
+        name: "example.com",
+        status: "taken",
+        price: "$12/year"
+      },
+      {
+        name: "mywebsite.com",
+        status: "available",
+        price: "$10/year"
+      },
+      {
+        name: "business.net",
+        status: "taken",
+        price: "$15/year"
+      },
+      {
+        name: "startup.io",
+        status: "available",
+        price: "$35/year"
+      },
+      {
+        name: "mybrand.co",
+        status: "available",
+        price: "$20/year"
+      },
+      {
+        name: "company.org",
+        status: "taken",
+        price: "$14/year"
+      }
+    ];
+
+    let currentFilter = "all";
+
+    function setFilter(filter, button) {
+
+      currentFilter = filter;
+
+      document.querySelectorAll(".filter")
+        .forEach(btn => btn.classList.remove("active"));
+
+      button.classList.add("active");
+
+      filterDomains();
+    }
+
+
+    function filterDomains() {
+
+      const search =
+        document.getElementById("search")
+          .value
+          .toLowerCase()
+          .trim();
+
+      const results = domains.filter(domain => {
+
+        const matchesSearch =
+          domain.name.toLowerCase().includes(search);
+
+        const matchesFilter =
+          currentFilter === "all" ||
+          domain.status === currentFilter;
+
+        return matchesSearch && matchesFilter;
+      });
+
+      displayDomains(results);
+    }
+
+
+    function displayDomains(results) {
+
+      const container =
+        document.getElementById("results");
+
+      if (results.length === 0) {
+
+        container.innerHTML = `
+          <div class="empty">
+            No domains found.
+          </div>
+        `;
+
+        return;
+      }
+
+      container.innerHTML = results.map(domain => `
+
+        <div class="domain">
+
+          <div>
+            <div class="domain-name">
+              ${domain.name}
+            </div>
+
+            <div class="info">
+              ${domain.price}
+            </div>
+          </div>
+
+          <span class="status ${domain.status}">
+            ${domain.status === "available"
+              ? "Available"
+              : "Taken"}
+          </span>
+
+        </div>
+
+      `).join("");
+    }
+
+
+    // Load domains when page opens
+    displayDomains(domains);
+
+  </script>
+
+</body>
+</html>
